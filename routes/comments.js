@@ -2,27 +2,22 @@ const store = require('../store');
 
 module.exports = {
     getComments(request, response) {
-        // Make sure id is in range
-        if(store.isValidPostId(request.params.postId))
-        {
-            // Get all comments unless a commentId was queried
-            if('commentId' in request.query) {
-                if(store.isValidCommentId(request.params.postId, request.query.commentId)) {
-                    response.status(200).send(store.posts[request.params.postId].comments[request.query.commentId]);
-                } else {
-                    response.sendStatus(400);
-                }
+        // postId has been pre-validated, so we know it's okay
+        // Get all comments unless a commentId was queried
+        if('commentId' in request.query) {
+            if(store.isValidCommentId(request.params.postId, request.query.commentId)) {
+                response.status(200).send(store.posts[request.params.postId].comments[request.query.commentId]);
             } else {
-                response.status(200).send(store.posts[request.params.postId].comments);
+                response.status(404).send({error: "Invalid postId"});
             }
         } else {
-            response.sendStatus(400);
+            response.status(200).send(store.posts[request.params.postId].comments);
         }
     },
 
     addComment(request, response) {
-        // Make sure id is in range and body has a "text" property
-        if(store.isValidPostId(request.params.postId) && 'text' in request.body)
+        // Make sure body has a "text" property
+        if('text' in request.body)
         {
             let postId = request.params.postId;
             // Make sure that the comment array exists
@@ -32,32 +27,27 @@ module.exports = {
             let commentId = store.posts[postId].comments.length;
             // We only care about the "text" propery
             store.posts[postId].comments.push({text: request.body.text});
-            response.status(201).send({commentId: commentId});
+            response.status(201).send({commentId: commentId, text: request.body.text});
         } else {
-            response.sendStatus(400);
+            response.status(400).send({error: 'Missing text field'});
         }        
     },
 
     updateComment(request, response) {
-        // Make sure ids are in range and update has a "text" property
-        if(store.isValidCommentId(request.params.postId, request.params.commentId) && 'text' in request.body)
+        // Make body has a "text" property
+        if('text' in request.body)
         {
             // We only care about the "text" propery
             store.posts[request.params.postId].comments[request.params.commentId].text = request.body.text;
-            response.sendStatus(204);
+            response.status(200).send({commentId: commentId, text: request.body.text});
         } else {
-            response.sendStatus(400);
+            response.status(400).send({error: 'Missing text field'});
         }
     },
 
     deleteComment(request, response) {
-        // Make sure ids are in range
-        if(store.isValidCommentId(request.params.postId, request.params.commentId))
-        {
-            store.posts[request.params.postId].comments.splice(request.params.commentId, 1);
-            response.sendStatus(204);
-        } else {
-            response.sendStatus(400);
-        }
+        // Ids have been pre-validated, so we know they are correct
+        store.posts[request.params.postId].comments.splice(request.params.commentId, 1);
+        response.sendStatus(204);
     }
 };

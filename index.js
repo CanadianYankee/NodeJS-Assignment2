@@ -3,11 +3,16 @@ const logger = require('morgan');
 const bodyParser = require('body-parser');
 const posts = require('./routes/posts');
 const comments = require('./routes/comments');
+const store = require('./store');
 
 let app = express();
 
 app.use(bodyParser.json());
 app.use(logger('dev'));
+
+// Use custom middleware to validate post and comment Ids
+app.use('/posts/:postId', store.validatePostId);
+app.use('/posts/:postId/comments/:commentId', store.validateCommentId);
 
 app.get('/posts', posts.getPosts);
 app.post('/posts', posts.addPost);

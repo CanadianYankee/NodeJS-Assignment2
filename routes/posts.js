@@ -8,7 +8,7 @@ module.exports = {
             {
                 response.status(200).send(store.posts[request.query.postId]);
             } else {
-                response.sendStatus(400);
+                response.status(404).send({error: 'Invalid postId'});
             }
         } else {
             response.status(200).send(store.posts);
@@ -23,35 +23,25 @@ module.exports = {
         newPost.comments = [];
         let postId = store.posts.length;
         store.posts.push(newPost);
-        response.status(201).send({postId: postId});
+        response.status(201).send({postId: postId, post: newPost});
     },
 
     updatePost(request, response) {
-        // Make sure id is in range
-        if(store.isValidPostId(request.params.postId))
-        {
-            let id = request.params.postId;
-            // Allow partial updates by only udating fields that are in the request
-            store.postFields.forEach((f) => {
-                if(f in request.body) {
-                    store.posts[id][f] = request.body[f];
-                }
-            });
-            response.sendStatus(204);
-        } else {
-            response.sendStatus(400);
-        }
+        // Id has been pre-validated, so we know it's fine
+        let id = request.params.postId;
+        // Allow partial updates by only udating fields that are in the request
+        store.postFields.forEach((f) => {
+            if(f in request.body) {
+                store.posts[id][f] = request.body[f];
+            }
+        });
+        response.status(200).send({postId: postId, post: store.posts[id]});
     },
 
     deletePost(request, response) {
-        // Make sure id is in range
-        if(store.isValidPostId(request.params.postId))
-        {
-            let id = request.params.postId;
-            store.posts.splice(id, 1);
-            response.sendStatus(204);
-        } else {
-            response.sendStatus(400);
-        }
+        // Id has been pre-validated, so we know it's fine
+        let id = request.params.postId;
+        store.posts.splice(id, 1);
+        response.sendStatus(204);
     }
 };
