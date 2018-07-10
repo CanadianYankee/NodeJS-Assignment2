@@ -21,8 +21,8 @@ module.exports = {
     },
 
     addComment(request, response) {
-        // Make sure id is in range
-        if(store.isValidPostId(request.params.postId))
+        // Make sure id is in range and body has a "text" property
+        if(store.isValidPostId(request.params.postId) && 'text' in request.body)
         {
             let postId = request.params.postId;
             // Make sure that the comment array exists
@@ -39,8 +39,8 @@ module.exports = {
     },
 
     updateComment(request, response) {
-        // Make sure ids are in range
-        if(store.isValidCommentId(request.params.postId, request.params.commentId))
+        // Make sure ids are in range and update has a "text" property
+        if(store.isValidCommentId(request.params.postId, request.params.commentId) && 'text' in request.body)
         {
             // We only care about the "text" propery
             store.posts[request.params.postId].comments[request.params.commentId].text = request.body.text;
